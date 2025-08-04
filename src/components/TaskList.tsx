@@ -1,6 +1,7 @@
+// src/components/TaskList.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -20,11 +21,92 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { Task } from '@prisma/client'
 
-type Props = {
-  initialTasks: Task[]
+export default function TaskList() {
+  const router = useRouter()
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // 初回マウント時にタスクを取得
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await fetch('/api/tasks')
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`)
+        const data: Task[] = await res.json()
+        setTasks(data)
+      } catch (e: any) {
+        console.error(e)
+        setError(e.message || 'Unknown error')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchTasks()
+  }, [])
+
+  // ドラッグ＆ドロップ用センサー
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  )
+
+  const handleDragEnd = async (event: any) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = tasks.findIndex((t) => t.id === active.id)
+    const newIndex = tasks.findIndex((t) => t.id === over.id)
+    const newTasks = arrayMove(tasks, oldIndex, newIndex)
+    setTasks(newTasks)
+
+    try {
+      await fetch('/api/tasks/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: newTasks.map((t) => t.id) }),
+      })
+      router.refresh()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  if (isLoading) {
+    return <div className="p-4 text-center">Loading tasks...</div>
+  }
+  if (error) {
+    return (
+      <div className="p-4 text-red-600 text-center">
+        Failed to load tasks: {error}
+      </div>
+    )
+  }
+
+  return (
+    <div className="overflow-x-auto bg-white shadow rounded">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={tasks.map((t) => t.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <table className="min-w-full divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200">
+              {tasks.map((task) => (
+                <SortableRow key={task.id} task={task} />
+              ))}
+            </tbody>
+          </table>
+        </SortableContext>
+      </DndContext>
+    </div>
+  )
 }
 
-// 個々の行をドラッグ可能にするためのラッパー
+// 並び替え可能な行コンポーネント
 function SortableRow({ task }: { task: Task }) {
   const {
     attributes,
@@ -65,74 +147,12 @@ function SortableRow({ task }: { task: Task }) {
       <td className="px-4 py-2 whitespace-nowrap text-right space-x-2">
         <Link
           href={`/task/${task.id}/edit`}
+         className="text-sm text-white bg-black py-2 px-4 rounded-2xl font-semibold hover:underline hover:cursor-pointer"
         >
-          <button   className="text-sm text-white bg-black py-2 px-4 rounded-2xl font-semibold hover:underline hover:cursor-pointer">Edit</button>
+          Edit
         </Link>
         <DeleteButton id={task.id} />
       </td>
     </tr>
-  )
-}
-
-export default function TaskList({ initialTasks }: Props) {
-  const router = useRouter()
-  // ローカル状態に変換し、並び替えで変更できるようにする
-  const [tasks, setTasks] = useState(initialTasks)
-
-  // DnD Kit センサー設定
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // ドラッグ開始距離を少し大きくして誤操作を減らす
-      },
-    })
-  )
-
-  const handleDragEnd = async (event: any) => {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-
-    const oldIndex = tasks.findIndex((t) => t.id === active.id)
-    const newIndex = tasks.findIndex((t) => t.id === over.id)
-
-    // フロント側の配列を入れ替え
-    const newTasks = arrayMove(tasks, oldIndex, newIndex)
-    setTasks(newTasks)
-
-    // サーバーに新しい順序を保存
-    try {
-      await fetch('/api/tasks/reorder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: newTasks.map((t) => t.id) }),
-      })
-      // サーバー側の最新状態を取得し直す
-      router.refresh()
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  return (
-    <div className="overflow-x-auto bg-white shadow rounded">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={tasks.map((t) => t.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <table className="min-w-full divide-y divide-gray-200">
-            <tbody className="divide-y divide-gray-200">
-              {tasks.map((task) => (
-                <SortableRow key={task.id} task={task} />
-              ))}
-            </tbody>
-          </table>
-        </SortableContext>
-      </DndContext>
-    </div>
   )
 }
