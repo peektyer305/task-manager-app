@@ -65,7 +65,6 @@ export default function TaskList() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: newTasks.map((t) => t.id) }),
       })
-      router.refresh()
     } catch (err) {
       console.error(err)
     }
@@ -82,7 +81,7 @@ export default function TaskList() {
     )
   }
 
-  return (
+   return (
     <div className="overflow-x-auto bg-white shadow rounded">
       <DndContext
         sensors={sensors}
@@ -96,7 +95,13 @@ export default function TaskList() {
           <table className="min-w-full divide-y divide-gray-200">
             <tbody className="divide-y divide-gray-200">
               {tasks.map((task) => (
-                <SortableRow key={task.id} task={task} />
+                <SortableRow
+                  key={task.id}
+                  task={task}
+                  onDelete={() =>
+                    setTasks((prev) => prev.filter((t) => t.id !== task.id))
+                  }
+                />
               ))}
             </tbody>
           </table>
@@ -107,7 +112,13 @@ export default function TaskList() {
 }
 
 // 並び替え可能な行コンポーネント
-function SortableRow({ task }: { task: Task }) {
+function SortableRow({
+  task,
+  onDelete,
+}: {
+  task: Task
+  onDelete: () => void
+}) {
   const {
     attributes,
     listeners,
@@ -144,14 +155,14 @@ function SortableRow({ task }: { task: Task }) {
       <td className="px-4 py-2 whitespace-nowrap">
         {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
       </td>
-      <td className="px-4 py-2 whitespace-nowrap text-right space-x-2">
+     <td className="px-4 py-2 whitespace-nowrap text-right space-x-2">
         <Link
           href={`/task/${task.id}/edit`}
-         className="text-sm text-white bg-black py-2 px-4 rounded-2xl font-semibold hover:underline hover:cursor-pointer"
+          className="text-sm text-white bg-black py-2 px-4 rounded-2xl font-semibold"
         >
           Edit
         </Link>
-        <DeleteButton id={task.id} />
+        <DeleteButton id={task.id} onDelete={onDelete} />
       </td>
     </tr>
   )

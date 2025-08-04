@@ -1,21 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
-interface Params {
-  params: { id: string }
-}
-
-/**
- * Handle GET requests to /api/tasks/[id] to return a single task by ID.
- */
-export async function GET(request: Request, { params }: Params) {
-   const session = await getServerSession(authOptions)
-      if (!session?.user?.id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-  const id = parseInt(params.id)
+/** GET: 指定IDのタスクを取得 */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const id = parseInt(params.id, 10)
   const task = await prisma.task.findUnique({ where: { id } })
   if (!task) {
     return new NextResponse('Task not found', { status: 404 })
@@ -23,21 +14,16 @@ export async function GET(request: Request, { params }: Params) {
   return NextResponse.json(task)
 }
 
-/**
- * Handle PUT requests to /api/tasks/[id] to update an existing task. The
- * request body should include title, description, priority, category
- * and dueDate. Only provided fields will be updated.
- */
-export async function PUT(request: Request, { params }: Params) {
-   const session = await getServerSession(authOptions)
-      if (!session?.user?.id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-  const id = parseInt(params.id)
-  const data = await request.json()
-  const { title, description, priority, category, dueDate } = data
+/** PUT: 指定IDのタスクを更新 */
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const id = parseInt(params.id, 10)
+  const { title, description, priority, category, dueDate } = await request.json()
+
   try {
-    const task = await prisma.task.update({
+    const updated = await prisma.task.update({
       where: { id },
       data: {
         title,
@@ -47,26 +33,22 @@ export async function PUT(request: Request, { params }: Params) {
         dueDate: dueDate ? new Date(dueDate) : undefined,
       },
     })
-    return NextResponse.json(task)
-  } catch (error) {
+    return NextResponse.json(updated)
+  } catch (e) {
     return new NextResponse('Task not found', { status: 404 })
   }
 }
 
-/**
- * Handle DELETE requests to /api/tasks/[id] to remove a task from the
- * database. Returns a message upon successful deletion.
- */
-export async function DELETE(request: Request, { params }: Params) {
-   const session = await getServerSession(authOptions)
-      if (!session?.user?.id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-  const id = parseInt(params.id)
+/** DELETE: 指定IDのタスクを削除 */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const id = parseInt(params.id, 10)
   try {
     await prisma.task.delete({ where: { id } })
-    return NextResponse.json({ message: 'Task deleted' })
-  } catch (error) {
+    return new NextResponse('Task deleted', { status: 200 })
+  } catch (e) {
     return new NextResponse('Task not found', { status: 404 })
   }
 }

@@ -8,14 +8,17 @@ import { redirect, useRouter } from 'next/navigation'
  * re-fetch the updated task list. A red styled link makes the intent
  * clear to the user.
  */
-export default function DeleteButton({ id }: { id: number }) {
-  const router = useRouter()
+export default function DeleteButton({
+  id,
+  onDelete,
+}: {
+  id: number
+  onDelete: () => void
+}) {
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this task?')) return
+    if (!confirm('本当に削除しますか？')) return
     await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
-    // Refresh the current route to show updated tasks
-   router.refresh()
-   
+    onDelete()  // 親に成功通知
   }
   return (
     <button
