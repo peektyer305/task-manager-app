@@ -1,0 +1,39 @@
+//crate app
+
+flyctl launch `
+  --name taskapp `
+  --region nrt `
+  --dockerfile Dockerfile `
+  --no-deploy
+
+//create db
+
+  flyctl postgres create `
+  --name taskdb `
+  --region nrt `
+  --vm-size shared-cpu-1x `
+  --volume-size 1
+
+//attach db to app
+
+  flyctl postgres attach `
+  --app taskapp `
+  taskdb
+
+//make dockerfile
+
+//auto migration
+[deploy]
+  release_command = "npx prisma migrate deploy"
+
+//deploy
+flyctl deploy --app taskapp
+
+//log
+flyctl logs --app taskapp --follow
+
+//update
+flyctl deploy --app taskapp
+
+↑auto deploy&migration!
+
