@@ -21,7 +21,7 @@ export default function Header() {
               {session.user.name ?? session.user.email}
             </span>
             <button
-              onClick={() => signOut()}
+              onClick={() => signOut({callbackUrl:"/"})}
                className="text-sm text-white bg-black py-2 px-4 rounded-2xl font-semibold hover:underline hover:cursor-pointer"
             >
               Sign out
@@ -29,7 +29,7 @@ export default function Header() {
           </div>
         ) : (
           <button
-            onClick={() => signIn()}
+            onClick={() => signIn('github', {callbackUrl:"/"})}
             className="text-sm text-white bg-black py-2 px-4 rounded-2xl font-semibold hover:underline hover:cursor-pointer"
           >
             Sign in

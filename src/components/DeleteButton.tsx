@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 
 /**
  * DeleteButton is a client component that deletes a task by its ID
@@ -14,7 +14,8 @@ export default function DeleteButton({ id }: { id: number }) {
     if (!confirm('Are you sure you want to delete this task?')) return
     await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
     // Refresh the current route to show updated tasks
-    router.refresh()
+   router.refresh()
+   
   }
   return (
     <button

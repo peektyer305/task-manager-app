@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 // NextAuth のオプションを型定義に従って記述
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   adapter: PrismaAdapter(prisma),
   providers: [
     GithubProvider({
