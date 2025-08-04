@@ -1,0 +1,9 @@
+/* Import Tailwind base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom global styles can be added here */
+body {
+  @apply text-gray-900;
+}
