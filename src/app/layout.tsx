@@ -1,5 +1,8 @@
 import '../app/globals.css'
 import type { ReactNode } from 'react'
+import { SessionProvider } from 'next-auth/react'
+import Header from '@/components/Header'
+import Providers from '@/components/Providers'
 
 export const metadata = {
   title: 'Task Manager App',
@@ -12,11 +15,14 @@ export const metadata = {
  * area from the browser chrome. The min-h-screen class ensures the
  * application always fills at least the viewport height.
  */
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children}: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50">
-        {children}
+         <Providers>
+          <Header />         
+          {children}
+        </Providers>
       </body>
     </html>
   )

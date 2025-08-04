@@ -22,7 +22,7 @@ export default function Header() {
             </span>
             <button
               onClick={() => signOut()}
-              className="text-sm text-red-600 hover:underline"
+               className="text-sm text-white bg-black py-2 px-4 rounded-2xl font-semibold hover:underline hover:cursor-pointer"
             >
               Sign out
             </button>
@@ -30,7 +30,7 @@ export default function Header() {
         ) : (
           <button
             onClick={() => signIn()}
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-white bg-black py-2 px-4 rounded-2xl font-semibold hover:underline hover:cursor-pointer"
           >
             Sign in
           </button>
