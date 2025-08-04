@@ -3,3 +3,6 @@ node_modules
 .env*
 *.sqlite
 db-data
+memo.txt
+.vscode
+.vscode-test
