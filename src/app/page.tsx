@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import DeleteButton from '@/components/DeleteButton'
 import TaskList from '@/components/TaskList'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from './api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
 export default async function Home() {
@@ -11,8 +11,7 @@ export default async function Home() {
   if (!session?.user?.id) {
     redirect('/api/auth/signin')
   }
-  
-
+  const faketasks = []
   return (
     <main className="max-w-4xl mx-auto py-8 px-4">
       <header className="flex justify-between items-center mb-6">
@@ -23,7 +22,7 @@ export default async function Home() {
           Add Task
         </Link>
       </header>
-       <TaskList initialTasks={[]} />
+       <TaskList initialTasks={faketasks} />
     </main>
   )
 }

@@ -21,9 +21,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { Task } from '@prisma/client'
 
-export default function TaskList() {
+export default function TaskList( props: { initialTasks: Task[] }) {
   const router = useRouter()
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [tasks, setTasks] = useState<Task[]>(props.initialTasks)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
