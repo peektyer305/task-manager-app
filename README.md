@@ -17,10 +17,3 @@
 - [Node.js](https://nodejs.org/)（バージョン 18+ 推奨）  
 - PostgreSQL を実行するための [Docker](https://www.docker.com/products/docker-desktop/) と Docker Compose
 
-### セットアップ
-
-1. **リポジトリをクローン**
-
-   ```bash
-   git clone <repository-url>
-   cd task-manager-app
